@@ -1,10 +1,10 @@
 package com.clearlyspam23.LD28.model.test;
 
-import com.clearlyspam23.LD28.model.Direction;
 import com.clearlyspam23.LD28.model.GridWorld;
-import com.clearlyspam23.LD28.model.Location;
 import com.clearlyspam23.LD28.model.Pipe;
 import com.clearlyspam23.LD28.model.PipeDef;
+import com.clearlyspam23.LD28.util.Direction;
+import com.clearlyspam23.LD28.util.Location;
 
 public class TestModel {
 	

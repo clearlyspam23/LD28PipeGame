@@ -2,6 +2,9 @@ package com.clearlyspam23.LD28.model;
 
 import java.util.ArrayList;
 
+import com.clearlyspam23.LD28.util.Direction;
+import com.clearlyspam23.LD28.util.Location;
+
 public class GridWorld {
 	
 	private Pipe[][] pipes;
@@ -12,6 +15,16 @@ public class GridWorld {
 	public GridWorld(int width, int height)
 	{
 		pipes = new Pipe[width][height];
+	}
+	
+	public int getWidth()
+	{
+		return pipes.length;
+	}
+	
+	public int getHeight()
+	{
+		return pipes[0].length;
 	}
 	
 	public void addNormalPipe(PipeDef def, int x, int y)

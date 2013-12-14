@@ -2,14 +2,17 @@ package com.clearlyspam23.LD28.model;
 
 import java.util.ArrayList;
 
+import com.clearlyspam23.LD28.util.Direction;
+import com.clearlyspam23.LD28.util.Location;
+
 public class Pipe {
 	
-	private static final int MAX_FILL = 100;
+	public static final int MAX_FILL = 100;
 	
 	private PipeDef definition;
 	private int fill;
 	private Location location = new Location();
-	private Direction inputFrom;
+	private Direction inputFrom = Direction.NO_DIRECTION;
 	private ArrayList<Direction> outputs;
 	
 	public Pipe()
@@ -25,6 +28,11 @@ public class Pipe {
 	public void setDefinition(PipeDef def)
 	{
 		definition = def;
+	}
+	
+	public PipeDef getDefinition()
+	{
+		return definition;
 	}
 	
 	public boolean isFull()
