@@ -1,6 +1,6 @@
 package com.clearlyspam23.LD28.view;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.clearlyspam23.LD28.model.GridWorld;
@@ -11,19 +11,19 @@ public class GridView {
 	
 	private GridWorld myWorld;
 	private GridWorld previousWorld;
+	private Map<PipeDef, PipeRenderer> rendererMap;
 	
-	public GridView(GridWorld world, GridWorld previous)
+	public GridView(GridWorld world, GridWorld previous, Map<PipeDef, PipeRenderer> map)
 	{
 		myWorld = world;
 		previousWorld = previous;
+		rendererMap = map;
 	}
 	
-	private HashMap<PipeDef, PipeRenderer> rendererMap = new HashMap<PipeDef, PipeRenderer>();
-	
-	public void addRenderer(PipeDef def, PipeRenderer renderer)
-	{
-		rendererMap.put(def, renderer);
-	}
+//	public void addRenderer(PipeDef def, PipeRenderer renderer)
+//	{
+//		rendererMap.put(def, renderer);
+//	}
 	
 	public void render(SpriteBatch batch, float delta)
 	{

@@ -26,7 +26,6 @@ public class GridEditingController {
 	
 	public void setCurrentPipe(int index)
 	{
-		System.out.println(index);
 		if(index<0||index>=pipeDefinitions.size())
 			currentPipe = null;
 		else
@@ -87,9 +86,6 @@ public class GridEditingController {
 	
 	public void attemptAddPipe(Location l)
 	{
-		System.out.println(l);
-		System.out.println(numMoves);
-		System.out.println(currentPipe);
 		if(numMoves<=0||currentPipe==null)
 			return;
 		System.out.println("might add");

@@ -1,5 +1,7 @@
 package com.clearlyspam23.LD28;
 
+import java.util.HashMap;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
@@ -15,6 +17,7 @@ import com.clearlyspam23.LD28.util.Location;
 import com.clearlyspam23.LD28.view.GameView;
 import com.clearlyspam23.LD28.view.GridView;
 import com.clearlyspam23.LD28.view.PipeBar;
+import com.clearlyspam23.LD28.view.PipeRenderer;
 import com.clearlyspam23.LD28.view.renderers.BasicPipeRenderer;
 
 public class LD28Game implements ApplicationListener {
@@ -90,22 +93,25 @@ public class LD28Game implements ApplicationListener {
 //				r.flip(false, true);
 		view = new GameView();
 		//WorldToScreenConverter converter = new WorldToScreenConverter(PIPE_WIDTH, PIPE_HEIGHT);
-		GridView gridView = new GridView(currentWorld, previousWorld);
-		gridView.addRenderer(horizontalPipe, new BasicPipeRenderer(regions[0][0], regions[2][0]));
-		gridView.addRenderer(verticalPipe, new BasicPipeRenderer(regions[0][1], regions[2][1]));
-		gridView.addRenderer(finishHorizontalPipe, new BasicPipeRenderer(regions[1][0], regions[3][0]));
-		gridView.addRenderer(finishVerticalPipe, new BasicPipeRenderer(regions[1][1], regions[3][1]));
-		gridView.addRenderer(downRightLPipe, new BasicPipeRenderer(regions[0][2], regions[2][2]));
-		gridView.addRenderer(downLeftLPipe, new BasicPipeRenderer(regions[0][3], regions[2][3]));
-		gridView.addRenderer(upRightLPipe, new BasicPipeRenderer(regions[1][2], regions[3][2]));
-		gridView.addRenderer(upLeftLPipe, new BasicPipeRenderer(regions[1][3], regions[3][3]));
+		HashMap<PipeDef, PipeRenderer> renderMap = new HashMap<PipeDef, PipeRenderer>();
+		renderMap.put(horizontalPipe, new BasicPipeRenderer(regions[0][0], regions[2][0]));
+		renderMap.put(verticalPipe, new BasicPipeRenderer(regions[0][1], regions[2][1]));
+		renderMap.put(finishHorizontalPipe, new BasicPipeRenderer(regions[1][0], regions[3][0]));
+		renderMap.put(finishVerticalPipe, new BasicPipeRenderer(regions[1][1], regions[3][1]));
+		renderMap.put(downRightLPipe, new BasicPipeRenderer(regions[0][2], regions[2][2]));
+		renderMap.put(downLeftLPipe, new BasicPipeRenderer(regions[0][3], regions[2][3]));
+		renderMap.put(upRightLPipe, new BasicPipeRenderer(regions[1][2], regions[3][2]));
+		renderMap.put(upLeftLPipe, new BasicPipeRenderer(regions[1][3], regions[3][3]));
+		GridView gridView = new GridView(currentWorld, previousWorld, renderMap);
+		view.setRenderMap(renderMap);
 		view.setGameView(gridView);
 		TextureRegion background = new TextureRegion(toolBarBackground);
-		TextureRegion border = new TextureRegion(UI, 0, 0, 64, 64);
+		TextureRegion border = new TextureRegion(UI, 64, 0, 64, 64);
 		BitmapFont font = new BitmapFont(Gdx.files.internal("data/GadugiBlack.fnt"));
 		PipeBar sidebar = new PipeBar(background, border);
 		view.setSidebar(sidebar);
 		view.setController(controller);
+		view.setBoundingRegion(new TextureRegion(UI, 0, 0, 64, 64));
 		
 		view.initialize();
 		
