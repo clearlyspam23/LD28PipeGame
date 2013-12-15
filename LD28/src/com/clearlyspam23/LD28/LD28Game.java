@@ -3,13 +3,20 @@ package com.clearlyspam23.LD28;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
+<<<<<<< HEAD
 import com.badlogic.gdx.graphics.Texture;
+=======
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.clearlyspam23.LD28.model.GridWorld;
 import com.clearlyspam23.LD28.model.PipeDef;
 import com.clearlyspam23.LD28.util.Direction;
 import com.clearlyspam23.LD28.util.Location;
+<<<<<<< HEAD
 import com.clearlyspam23.LD28.util.WorldToScreenConverter;
 import com.clearlyspam23.LD28.view.GameView;
 import com.clearlyspam23.LD28.view.GridView;
@@ -17,6 +24,13 @@ import com.clearlyspam23.LD28.view.renderers.BasicPipeRenderer;
 
 public class LD28Game implements ApplicationListener {
 	//private OrthographicCamera camera;
+=======
+import com.clearlyspam23.LD28.view.PipeView;
+import com.clearlyspam23.LD28.view.renderers.BasicPipeRenderer;
+
+public class LD28Game implements ApplicationListener {
+	private OrthographicCamera camera;
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 	private SpriteBatch batch;
 	private Texture texture;
 	
@@ -25,24 +39,36 @@ public class LD28Game implements ApplicationListener {
 	private static final float WORLD_STEP_DELAY = 0.25f;
 	
 	private float worldDelay;
+<<<<<<< HEAD
 	private GridWorld currentWorld;
 	private GridWorld previousWorld;
 	private GameView view;
 	//private GridController controller;
+=======
+	private GridWorld world;
+	private PipeView view;
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 	
 	@Override
 	public void create() {		
 		//Model code
 		
+<<<<<<< HEAD
 		currentWorld = new GridWorld(10, 10);
 		PipeDef horizontalPipe = createBidirectional(new Direction[] { Direction.LEFT, Direction.RIGHT } );
 		PipeDef verticalPipe = createBidirectional(new Direction[] { Direction.UP, Direction.DOWN } );
 		PipeDef finishHorizontalPipe = createBidirectional(new Direction[] { Direction.LEFT, Direction.RIGHT } );
 		PipeDef finishVerticalPipe = createBidirectional(new Direction[] { Direction.UP, Direction.DOWN } );
+=======
+		world = new GridWorld(3, 3);
+		PipeDef horizontalPipe = createBidirectional(new Direction[] { Direction.LEFT, Direction.RIGHT } );
+		PipeDef verticalPipe = createBidirectional(new Direction[] { Direction.UP, Direction.DOWN } );
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 		PipeDef downRightLPipe = createBidirectional( new Direction[] { Direction.DOWN, Direction.RIGHT } );
 		PipeDef downLeftLPipe = createBidirectional( new Direction[] { Direction.DOWN, Direction.LEFT } );
 		PipeDef upRightLPipe = createBidirectional( new Direction[] { Direction.UP, Direction.RIGHT } );
 		PipeDef upLeftLPipe = createBidirectional(new Direction[] { Direction.UP, Direction.LEFT } );
+<<<<<<< HEAD
 		currentWorld.addNormalPipe(finishHorizontalPipe, 9, 9);
 		currentWorld.addNormalPipe(downRightLPipe, 8, 9);
 		currentWorld.addNormalPipe(verticalPipe, 8, 8);
@@ -69,6 +95,14 @@ public class LD28Game implements ApplicationListener {
 		//Controller code
 		
 		//controller = new GridController();
+=======
+		world.addNormalPipe(horizontalPipe, 2, 2);
+		world.addNormalPipe(downRightLPipe, 1, 2);
+		world.addNormalPipe(verticalPipe, 1, 1);
+		world.addNormalPipe(upLeftLPipe, 1, 0);
+		world.addNormalPipe(downRightLPipe, 0, 0);
+		world.startFrom(new Location(2, 2), Direction.RIGHT);
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 		
 		//View code
 		
@@ -77,6 +111,7 @@ public class LD28Game implements ApplicationListener {
 //		for(TextureRegion[] trs : regions)
 //			for(TextureRegion r : trs)
 //				r.flip(false, true);
+<<<<<<< HEAD
 		view = new GameView();
 		WorldToScreenConverter converter = new WorldToScreenConverter(PIPE_WIDTH, PIPE_HEIGHT);
 		GridView gridView = new GridView(currentWorld, previousWorld);
@@ -98,6 +133,22 @@ public class LD28Game implements ApplicationListener {
 //		camera.position.x = camera.viewportWidth/2;
 //		camera.position.y = camera.viewportHeight/2;
 //		camera.update();
+=======
+		
+		view = new PipeView(world);
+		view.addRenderer(horizontalPipe, new BasicPipeRenderer(regions[0][0], regions[2][0]));
+		view.addRenderer(verticalPipe, new BasicPipeRenderer(regions[0][1], regions[2][1]));
+		view.addRenderer(downRightLPipe, new BasicPipeRenderer(regions[0][2], regions[2][2]));
+		view.addRenderer(downLeftLPipe, new BasicPipeRenderer(regions[0][3], regions[2][3]));
+		view.addRenderer(upRightLPipe, new BasicPipeRenderer(regions[1][2], regions[3][2]));
+		view.addRenderer(upLeftLPipe, new BasicPipeRenderer(regions[1][3], regions[3][3]));
+		
+		camera = new OrthographicCamera(world.getWidth()*PIPE_WIDTH, world.getHeight()*PIPE_HEIGHT);
+		//camera.setToOrtho(true, camera.viewportWidth, camera.viewportHeight);
+		camera.position.x = camera.viewportWidth/2;
+		camera.position.y = camera.viewportHeight/2;
+		camera.update();
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 		batch = new SpriteBatch();
 		
 		//texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
@@ -105,7 +156,11 @@ public class LD28Game implements ApplicationListener {
 
 	@Override
 	public void dispose() {
+<<<<<<< HEAD
 		//batch.dispose();
+=======
+		batch.dispose();
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 		texture.dispose();
 	}
 
@@ -116,6 +171,7 @@ public class LD28Game implements ApplicationListener {
 		worldDelay+=Gdx.graphics.getDeltaTime();
 		if(worldDelay>=WORLD_STEP_DELAY)
 		{
+<<<<<<< HEAD
 			previousWorld.shallowSet(currentWorld);
 			currentWorld.simulate(20);
 			worldDelay-=WORLD_STEP_DELAY;
@@ -123,6 +179,14 @@ public class LD28Game implements ApplicationListener {
 		//view.render(worldDelay/WORLD_STEP_DELAY);
 		
 //		batch.setProjectionMatrix(camera.combined);
+=======
+			view.beforeWorldSimulation();
+			world.simulate(10);
+			worldDelay-=WORLD_STEP_DELAY;
+		}
+		
+		batch.setProjectionMatrix(camera.combined);
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 		batch.begin();
 		view.render(batch, worldDelay/WORLD_STEP_DELAY);
 		batch.end();

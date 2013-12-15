@@ -27,9 +27,14 @@ public enum Direction {
 			return RIGHT;
 		case DOWN:
 			return UP;
+<<<<<<< HEAD
 		default:
 			return NO_DIRECTION;
 		}
+=======
+		}
+		return null;
+>>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 	}
 
 }
