@@ -6,4 +6,6 @@ import com.clearlyspam23.LD28.model.Pipe;
 public abstract class PipeRenderer {
 	
 	public abstract void render(Batch batch, Pipe currentPipe, Pipe lastPipe, float delta);
+	
+	public abstract void renderEmpty(Batch batch, float x, float y, float width, float height);
 }

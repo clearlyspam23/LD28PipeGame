@@ -1,24 +1,34 @@
 package com.clearlyspam23.LD28.view;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
-public class Button {
+public abstract class Button {
 	
-	private TextureRegion up;
-	private TextureRegion down;
+	protected boolean pressed;
+	private Vector2 downLoc = new Vector2();
+	protected boolean enabled = true;
 	
-	private Rectangle bounds;
+	protected Rectangle bounds;
+	private ClickEvent event;
 	
-	public Button(TextureRegion up, TextureRegion down, float x, float y, float width, float height)
+	public Button(float width, float height, ClickEvent e)
 	{
-		this.up = up;
-		this.down = down;
-		this.bounds = new Rectangle(x, y, width, height);
+		bounds = new Rectangle(0, 0, width, height);
+		event = e;
 	}
 	
-	private boolean press;
-	private boolean enabled;
+	public void setLocation(float x, float y)
+	{
+		bounds.x = x;
+		bounds.y = y;
+	}
+	
+	public Rectangle getBounds()
+	{
+		return bounds;
+	}
 	
 	public void enable(boolean flag)
 	{
@@ -27,7 +37,39 @@ public class Button {
 	
 	public void onDown(float x, float y)
 	{
+		if(bounds.contains(x, y)&&enabled)
+		{
+			pressed = true;
+			downLoc.set(x, y);
+		}
+	}
+	
+	public void onUp(float x, float y)
+	{
+		if(pressed)
+		{
+			pressed = false;
+			if(closeEnough(x, y)&&event!=null)
+				event.onClick(downLoc.x, downLoc.y);
+		}
+	}
+	
+	public void checkMouseOver(float x, float y)
+	{
+		if(bounds.contains(x, y))
+			onMouseOver(x, y);
+	}
+	
+	protected void onMouseOver(float x, float y)
+	{
 		
 	}
+	
+	private boolean closeEnough(float x, float y)
+	{
+		return Math.abs(x-downLoc.x)<5&&Math.abs(y-downLoc.y)<5;
+	}
+	
+	public abstract void render(SpriteBatch batch, float delta);
 
 }

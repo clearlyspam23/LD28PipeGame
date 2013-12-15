@@ -61,7 +61,7 @@ public class GridWorld {
 					if(doesPipeExist(outloc))
 					{
 						Pipe o = getPipe(outloc);
-						if(o.canAcceptFrom(p.getLocation()))
+						if(o.canAcceptFrom(p.getLocation())&&!o.isFull())
 						{
 							o.inputFrom(outputdir.getOpposite());
 							o.fillUp(p.getOverflow());

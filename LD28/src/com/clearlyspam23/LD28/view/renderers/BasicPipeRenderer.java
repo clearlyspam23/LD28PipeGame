@@ -22,6 +22,11 @@ public class BasicPipeRenderer extends PipeRenderer {
 		this.empty = empty;
 		this.full = full;
 	}
+	
+	public void renderEmpty(Batch batch, float x, float y, float width, float height)
+	{
+		batch.draw(empty, x, y, width, height);
+	}
 
 	@Override
 	public void render(Batch batch, Pipe currentPipe, Pipe lastPipe, float delta) {

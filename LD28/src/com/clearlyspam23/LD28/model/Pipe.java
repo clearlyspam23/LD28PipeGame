@@ -109,5 +109,18 @@ public class Pipe {
 		inputFrom = pipe.inputFrom;
 		outputs = pipe.outputs;
 	}
+	
+	public boolean hasRotationTable()
+	{
+		return definition.rotationTable!=null&&definition.placeInTable>=0;
+	}
+	
+	public PipeDef getRotatedPipe()
+	{
+		int index = definition.placeInTable+1;
+		if(index>=definition.rotationTable.length)
+			index = 0;
+		return definition.rotationTable[index];
+	}
 
 }

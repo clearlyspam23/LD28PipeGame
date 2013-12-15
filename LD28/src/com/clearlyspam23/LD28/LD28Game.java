@@ -26,6 +26,8 @@ public class LD28Game implements ApplicationListener {
 	private Texture texture;
 	private Texture UI;
 	private Texture toolBarBackground;
+	private Texture worldBackground;
+	private Texture UIBackground;
 	
 	private static final int PIPE_WIDTH = 64;
 	private static final int PIPE_HEIGHT = 64;
@@ -44,6 +46,7 @@ public class LD28Game implements ApplicationListener {
 		//Model code
 		
 		currentWorld = new GridWorld(10, 10);
+		
 		PipeDef horizontalPipe = createBidirectional(new Direction[] { Direction.LEFT, Direction.RIGHT } );
 		PipeDef verticalPipe = createBidirectional(new Direction[] { Direction.UP, Direction.DOWN } );
 		PipeDef finishHorizontalPipe = createBidirectional(new Direction[] { Direction.LEFT, Direction.RIGHT } );
@@ -52,6 +55,19 @@ public class LD28Game implements ApplicationListener {
 		PipeDef downLeftLPipe = createBidirectional( new Direction[] { Direction.DOWN, Direction.LEFT } );
 		PipeDef upRightLPipe = createBidirectional( new Direction[] { Direction.UP, Direction.RIGHT } );
 		PipeDef upLeftLPipe = createBidirectional(new Direction[] { Direction.UP, Direction.LEFT } );
+		
+		PipeDef[] flatRotationTable = new PipeDef[]{ horizontalPipe, verticalPipe };
+		PipeDef[] lRotationTable = new PipeDef[]{ downRightLPipe, downLeftLPipe, upLeftLPipe, upRightLPipe };
+		
+		horizontalPipe.rotationTable = verticalPipe.rotationTable = flatRotationTable;
+		horizontalPipe.placeInTable = 0;
+		verticalPipe.placeInTable = 1;
+		downRightLPipe.rotationTable = downLeftLPipe.rotationTable = upRightLPipe.rotationTable = upLeftLPipe.rotationTable = lRotationTable;
+		downRightLPipe.placeInTable = 0;
+		downLeftLPipe.placeInTable = 1;
+		upLeftLPipe.placeInTable = 2;
+		upRightLPipe.placeInTable = 3;
+		
 		currentWorld.addNormalPipe(finishHorizontalPipe, 9, 9);
 		currentWorld.addNormalPipe(downRightLPipe, 8, 9);
 		currentWorld.addNormalPipe(verticalPipe, 8, 8);
@@ -87,6 +103,8 @@ public class LD28Game implements ApplicationListener {
 		texture = new Texture(Gdx.files.internal("data/Pipes.png"));
 		UI = new Texture(Gdx.files.internal("data/UI.png"));
 		toolBarBackground = new Texture(Gdx.files.internal("data/ToolBarBackground.png"));
+		worldBackground = new Texture(Gdx.files.internal("data/GrassBackground1.png"));
+		UIBackground = new Texture(Gdx.files.internal("data/UIBackground.png"));
 		TextureRegion[][] regions = TextureRegion.split(texture, PIPE_WIDTH, PIPE_HEIGHT);
 //		for(TextureRegion[] trs : regions)
 //			for(TextureRegion r : trs)
@@ -106,12 +124,24 @@ public class LD28Game implements ApplicationListener {
 		view.setRenderMap(renderMap);
 		view.setGameView(gridView);
 		TextureRegion background = new TextureRegion(toolBarBackground);
-		TextureRegion border = new TextureRegion(UI, 64, 0, 64, 64);
+		TextureRegion pipeActive = new TextureRegion(UI, 320, 0, 70, 70);
+		TextureRegion pipeInactive = new TextureRegion(UI, 64, 0, 70, 70);
+		TextureRegion pipeOver = new TextureRegion(UI, 192, 0, 70, 70);
+		TextureRegion startUp = new TextureRegion(UI, 0, 128, 128, 128);
+		TextureRegion startDown = new TextureRegion(UI, 128, 128, 128, 128);
+		TextureRegion undoUp = new TextureRegion(UI, 0, 256, 128, 128);
+		TextureRegion undoDown = new TextureRegion(UI, 128, 256, 128, 128);
 		BitmapFont font = new BitmapFont(Gdx.files.internal("data/GadugiBlack.fnt"));
-		PipeBar sidebar = new PipeBar(background, border);
+		PipeBar sidebar = new PipeBar(background, pipeActive, pipeInactive, pipeOver);
+		sidebar.setController(controller);
+		sidebar.setMap(renderMap);
 		view.setSidebar(sidebar);
 		view.setController(controller);
 		view.setBoundingRegion(new TextureRegion(UI, 0, 0, 64, 64));
+		view.setStartButton(startUp, startDown);
+		view.setUndoButton(undoUp, undoDown);
+		view.setBackground(new TextureRegion(worldBackground));
+		view.setUIBackground(new TextureRegion(UIBackground));
 		
 		view.initialize();
 		
@@ -132,13 +162,15 @@ public class LD28Game implements ApplicationListener {
 		texture.dispose();
 		UI.dispose();
 		toolBarBackground.dispose();
+		worldBackground.dispose();
+		UIBackground.dispose();
 	}
 
 	@Override
 	public void render() {		
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		if(controller.getNumMoves()>0)
+		if(!controller.shouldStart())
 		{
 			
 		}

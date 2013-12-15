@@ -6,5 +6,7 @@ public class PipeDef {
 	
 	public Direction[] inputs;
 	public Direction[] outputs;
+	public PipeDef[] rotationTable;
+	public int placeInTable = -1;
 
 }
