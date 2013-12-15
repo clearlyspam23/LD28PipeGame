@@ -1,11 +1,10 @@
 package com.clearlyspam23.LD28.view.renderers;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.clearlyspam23.LD28.model.Pipe;
 import com.clearlyspam23.LD28.util.Direction;
-import com.clearlyspam23.LD28.view.PipeRenderData;
 import com.clearlyspam23.LD28.view.PipeRenderer;
 
 public class BasicPipeRenderer extends PipeRenderer {
@@ -25,14 +24,16 @@ public class BasicPipeRenderer extends PipeRenderer {
 	}
 
 	@Override
-	public void render(SpriteBatch batch, Pipe pipe, PipeRenderData data, float delta) {
-		Direction start = pipe.getInput();
-		int fillDif = pipe.getFill() - data.lastFill;
-		float percentage = (((float)data.lastFill)+fillDif*delta)/Pipe.MAX_FILL;
+	public void render(Batch batch, Pipe currentPipe, Pipe lastPipe, float delta) {
+		batch.draw(empty, currentPipe.getLocation().x*empty.getRegionWidth(), currentPipe.getLocation().y*empty.getRegionHeight(), empty.getRegionWidth(), empty.getRegionHeight());
+		if(lastPipe==null)
+			return;
+		Direction start = currentPipe.getInput();
+		int fillDif = currentPipe.getFill() - lastPipe.getFill();
+		float percentage = (((float)lastPipe.getFill())+fillDif*delta)/Pipe.MAX_FILL;
 		if(percentage>1)
 			percentage = 1;
 		offset.set(0, 0);
-		dimensions.set(0, 0);
 		float dif;
 		switch(start)
 		{
@@ -91,13 +92,14 @@ public class BasicPipeRenderer extends PipeRenderer {
 //			bounds.height = full.getRegionHeight();
 			break;
 		default:
+			dimensions.x = 0;
+			dimensions.y = 0;
 			uv.x = full.getU();
 			uv.y = full.getV2();
 			uv2.x = full.getU2();
 			uv2.y = full.getV();
 		}
-		batch.draw(empty, pipe.getLocation().x*empty.getRegionWidth(), pipe.getLocation().y*empty.getRegionHeight(), empty.getRegionWidth(), empty.getRegionHeight());
-		batch.draw(full.getTexture(), pipe.getLocation().x*full.getRegionWidth() + offset.x, pipe.getLocation().y*full.getRegionHeight() + offset.y, dimensions.x, dimensions.y, uv.x, uv.y, uv2.x, uv2.y);
+		batch.draw(full.getTexture(), currentPipe.getLocation().x*full.getRegionWidth() + offset.x, currentPipe.getLocation().y*full.getRegionHeight() + offset.y, dimensions.x, dimensions.y, uv.x, uv.y, uv2.x, uv2.y);
 		
 	}
 

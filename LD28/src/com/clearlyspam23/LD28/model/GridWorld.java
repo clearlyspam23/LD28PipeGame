@@ -8,13 +8,22 @@ import com.clearlyspam23.LD28.util.Location;
 public class GridWorld {
 	
 	private Pipe[][] pipes;
-	private ArrayList<Location> currentFillLocations = new ArrayList<Location>();
+	private ArrayList<Location> currentFillLocations;
+	private ArrayList<Location> finishingLocations;
+	private boolean hasWon;
 	
-	private ArrayList<Location> lastFillLocations = new ArrayList<Location>();
+	//private ArrayList<Location> lastFillLocations = new ArrayList<Location>();
 	
 	public GridWorld(int width, int height)
 	{
 		pipes = new Pipe[width][height];
+		currentFillLocations = new ArrayList<Location>();
+		finishingLocations = new ArrayList<Location>();
+	}
+	
+	public GridWorld(GridWorld other)
+	{
+		set(other);
 	}
 	
 	public int getWidth()
@@ -36,8 +45,8 @@ public class GridWorld {
 	
 	public void simulate(int timeStep)
 	{
-		lastFillLocations.clear();
-		ArrayList<Location> fillLocations = lastFillLocations;
+		//lastFillLocations.clear();
+		ArrayList<Location> fillLocations = new ArrayList<Location>();
 		Pipe[] pipes = getCurrentPipes();
 		for(Pipe p : pipes)
 		{
@@ -57,6 +66,8 @@ public class GridWorld {
 							o.inputFrom(outputdir.getOpposite());
 							o.fillUp(p.getOverflow());
 							fillLocations.add(o.getLocation());
+							if(finishingLocations.contains(o.getLocation()))
+								hasWon = true;
 						}
 					}
 				}
@@ -64,15 +75,20 @@ public class GridWorld {
 			else
 				fillLocations.add(p.getLocation());
 		}
-		lastFillLocations = currentFillLocations;
+		//lastFillLocations = currentFillLocations;
 		currentFillLocations = fillLocations;
 	}
 	
-	public void startFrom(Location l, Direction input)
+	public void addStart(Location l, Direction input)
 	{
 		currentFillLocations.add(l);
 		Pipe p = getPipe(l);
 		p.inputFrom(input);
+	}
+	
+	public void addFinish(Location l)
+	{
+		finishingLocations.add(l);
 	}
 	
 	public Pipe[] getCurrentPipes()
@@ -85,15 +101,15 @@ public class GridWorld {
 		return ans;
 	}
 	
-	public Pipe[] getLastPipes()
-	{
-		Pipe[] ans = new Pipe[lastFillLocations.size()];
-		for(int i = 0; i < lastFillLocations.size(); i++)
-		{
-			ans[i] = getPipe(lastFillLocations.get(i));
-		}
-		return ans;
-	}
+//	public Pipe[] getLastPipes()
+//	{
+//		Pipe[] ans = new Pipe[lastFillLocations.size()];
+//		for(int i = 0; i < lastFillLocations.size(); i++)
+//		{
+//			ans[i] = getPipe(lastFillLocations.get(i));
+//		}
+//		return ans;
+//	}
 	
 	public Pipe[][] getAllPipes()
 	{
@@ -117,12 +133,48 @@ public class GridWorld {
 	
 	public boolean hasLost()
 	{
-		return currentFillLocations.size()==0;
+		return !hasWon&&currentFillLocations.size()==0;
+	}
+	
+	public boolean hasWon()
+	{
+		return hasWon;
 	}
 	
 	public boolean isLocationEmpty(Location l)
 	{
 		return getPipe(l) == null;
+	}
+	
+	public void set(GridWorld world)
+	{
+		pipes = new Pipe[world.pipes.length][world.pipes[0].length];
+		for(int i = 0; i < pipes.length; i++)
+			for(int j = 0; j < pipes[i].length; j++)
+				if(world.pipes[i][j]!=null)
+					pipes[i][j] = new Pipe(world.pipes[i][j]);
+		currentFillLocations = new ArrayList<Location>();
+		for(Location l : world.currentFillLocations)
+			currentFillLocations.add(l);
+		finishingLocations = new ArrayList<Location>();
+		for(Location l : world.finishingLocations)
+			finishingLocations.add(l);
+		hasWon = world.hasWon;
+	}
+	
+	public void shallowSet(GridWorld world)
+	{
+		for(int i = 0; i < pipes.length; i++)
+			for(int j = 0; j < pipes[i].length; j++)
+				if(world.pipes[i][j]!=null)
+					pipes[i][j].set(world.pipes[i][j]);
+		currentFillLocations.clear();
+		for(Location l : world.currentFillLocations)
+			currentFillLocations.add(l);
+		finishingLocations.clear();
+		for(Location l : world.finishingLocations)
+			finishingLocations.add(l);
+		hasWon = world.hasWon;
 	}
 
 }

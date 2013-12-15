@@ -27,8 +27,9 @@ public enum Direction {
 			return RIGHT;
 		case DOWN:
 			return UP;
+		default:
+			return NO_DIRECTION;
 		}
-		return null;
 	}
 
 }

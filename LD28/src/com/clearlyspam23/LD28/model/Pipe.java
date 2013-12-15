@@ -20,6 +20,11 @@ public class Pipe {
 		
 	}
 	
+	public Pipe(Pipe other)
+	{
+		set(other);
+	}
+	
 	public Pipe(PipeDef def)
 	{
 		this.definition = def;
@@ -94,6 +99,15 @@ public class Pipe {
 	public ArrayList<Direction> getOutputs()
 	{
 		return outputs;
+	}
+	
+	public void set(Pipe pipe)
+	{
+		definition = pipe.definition;
+		fill = pipe.fill;
+		location.set(pipe.location);
+		inputFrom = pipe.inputFrom;
+		outputs = pipe.outputs;
 	}
 
 }

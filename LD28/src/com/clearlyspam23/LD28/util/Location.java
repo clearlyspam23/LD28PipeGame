@@ -46,6 +46,13 @@ public class Location {
 		return new Location(this).add(d.offset);
 	}
 	
+	public boolean equals(Object other)
+	{
+		if(!(other instanceof Location))
+			return false;
+		return equals((Location)other);
+	}
+	
 	public boolean equals(Location other)
 	{
 		return other.x == x && other.y == y;
