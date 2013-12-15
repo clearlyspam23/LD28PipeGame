@@ -4,21 +4,25 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.clearlyspam23.LD28.controller.GridEditingController;
 import com.clearlyspam23.LD28.model.GridWorld;
 import com.clearlyspam23.LD28.model.PipeDef;
 import com.clearlyspam23.LD28.util.Direction;
 import com.clearlyspam23.LD28.util.Location;
-import com.clearlyspam23.LD28.util.WorldToScreenConverter;
 import com.clearlyspam23.LD28.view.GameView;
 import com.clearlyspam23.LD28.view.GridView;
+import com.clearlyspam23.LD28.view.PipeBar;
 import com.clearlyspam23.LD28.view.renderers.BasicPipeRenderer;
 
 public class LD28Game implements ApplicationListener {
 	//private OrthographicCamera camera;
 	private SpriteBatch batch;
 	private Texture texture;
+	private Texture UI;
+	private Texture toolBarBackground;
 	
 	private static final int PIPE_WIDTH = 64;
 	private static final int PIPE_HEIGHT = 64;
@@ -28,10 +32,12 @@ public class LD28Game implements ApplicationListener {
 	private GridWorld currentWorld;
 	private GridWorld previousWorld;
 	private GameView view;
-	//private GridController controller;
+	private GridEditingController controller;
 	
 	@Override
 	public void create() {		
+		
+		Texture.setEnforcePotImages(false);
 		//Model code
 		
 		currentWorld = new GridWorld(10, 10);
@@ -48,7 +54,7 @@ public class LD28Game implements ApplicationListener {
 		currentWorld.addNormalPipe(verticalPipe, 8, 8);
 		currentWorld.addNormalPipe(verticalPipe, 8, 7);
 		currentWorld.addNormalPipe(verticalPipe, 8, 6);
-		currentWorld.addNormalPipe(verticalPipe, 8, 5);
+		//currentWorld.addNormalPipe(verticalPipe, 8, 5);
 		currentWorld.addNormalPipe(verticalPipe, 8, 4);
 		currentWorld.addNormalPipe(verticalPipe, 8, 3);
 		currentWorld.addNormalPipe(verticalPipe, 8, 2);
@@ -68,17 +74,22 @@ public class LD28Game implements ApplicationListener {
 		
 		//Controller code
 		
-		//controller = new GridController();
+		controller = new GridEditingController(currentWorld);
+		controller.addPipeDef(verticalPipe);
+		controller.addPipeDef(horizontalPipe);
+		controller.addPipeDef(upLeftLPipe);
 		
 		//View code
 		
 		texture = new Texture(Gdx.files.internal("data/Pipes.png"));
+		UI = new Texture(Gdx.files.internal("data/UI.png"));
+		toolBarBackground = new Texture(Gdx.files.internal("data/ToolBarBackground.png"));
 		TextureRegion[][] regions = TextureRegion.split(texture, PIPE_WIDTH, PIPE_HEIGHT);
 //		for(TextureRegion[] trs : regions)
 //			for(TextureRegion r : trs)
 //				r.flip(false, true);
 		view = new GameView();
-		WorldToScreenConverter converter = new WorldToScreenConverter(PIPE_WIDTH, PIPE_HEIGHT);
+		//WorldToScreenConverter converter = new WorldToScreenConverter(PIPE_WIDTH, PIPE_HEIGHT);
 		GridView gridView = new GridView(currentWorld, previousWorld);
 		gridView.addRenderer(horizontalPipe, new BasicPipeRenderer(regions[0][0], regions[2][0]));
 		gridView.addRenderer(verticalPipe, new BasicPipeRenderer(regions[0][1], regions[2][1]));
@@ -89,6 +100,12 @@ public class LD28Game implements ApplicationListener {
 		gridView.addRenderer(upRightLPipe, new BasicPipeRenderer(regions[1][2], regions[3][2]));
 		gridView.addRenderer(upLeftLPipe, new BasicPipeRenderer(regions[1][3], regions[3][3]));
 		view.setGameView(gridView);
+		TextureRegion background = new TextureRegion(toolBarBackground);
+		TextureRegion border = new TextureRegion(UI, 0, 0, 64, 64);
+		BitmapFont font = new BitmapFont(Gdx.files.internal("data/GadugiBlack.fnt"));
+		PipeBar sidebar = new PipeBar(background, border);
+		view.setSidebar(sidebar);
+		view.setController(controller);
 		
 		view.initialize();
 		
@@ -105,21 +122,32 @@ public class LD28Game implements ApplicationListener {
 
 	@Override
 	public void dispose() {
-		//batch.dispose();
+		batch.dispose();
 		texture.dispose();
+		UI.dispose();
+		toolBarBackground.dispose();
 	}
 
 	@Override
 	public void render() {		
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		worldDelay+=Gdx.graphics.getDeltaTime();
-		if(worldDelay>=WORLD_STEP_DELAY)
+		if(controller.getNumMoves()>0)
 		{
-			previousWorld.shallowSet(currentWorld);
-			currentWorld.simulate(20);
-			worldDelay-=WORLD_STEP_DELAY;
+			
 		}
+		else
+		{
+			worldDelay+=Gdx.graphics.getDeltaTime();
+			if(worldDelay>=WORLD_STEP_DELAY)
+			{
+				previousWorld.shallowSet(currentWorld);
+				currentWorld.simulate(20);
+				worldDelay-=WORLD_STEP_DELAY;
+			}
+		}
+		
+		view.checkInput();
 		//view.render(worldDelay/WORLD_STEP_DELAY);
 		
 //		batch.setProjectionMatrix(camera.combined);

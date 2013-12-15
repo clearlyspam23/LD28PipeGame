@@ -154,10 +154,16 @@ public class GridWorld {
 	
 	public void shallowSet(GridWorld world)
 	{
-		for(int i = 0; i < pipes.length; i++)
-			for(int j = 0; j < pipes[i].length; j++)
-				if(world.pipes[i][j]!=null)
-					pipes[i][j].set(world.pipes[i][j]);
+		for(int i = 0; i < pipes.length; i++) {
+			for(int j = 0; j < pipes[i].length; j++) {
+				if(world.pipes[i][j]!=null) {
+					if(pipes[i][j]==null)
+						pipes[i][j] = new Pipe(world.pipes[i][j]);
+					else
+						pipes[i][j].set(world.pipes[i][j]);
+				}
+			}
+		}
 		currentFillLocations.clear();
 		for(Location l : world.currentFillLocations)
 			currentFillLocations.add(l);

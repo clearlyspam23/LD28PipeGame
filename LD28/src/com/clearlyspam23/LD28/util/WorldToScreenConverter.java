@@ -1,44 +1,40 @@
 package com.clearlyspam23.LD28.util;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 
 public class WorldToScreenConverter {
 	
-	private Vector2 ratio;
+	private Vector2 gridDim;
+	private Camera worldCamera;
 	
-	public WorldToScreenConverter(float worldWidth, float worldHeight, float gridWidth, float gridHeight)
+	public WorldToScreenConverter(Camera worldCam, float gridWidth, float gridHeight)
 	{
-		ratio = new Vector2(worldWidth/gridWidth, worldHeight/gridHeight);
+		gridDim = new Vector2(gridWidth, gridHeight);
+		worldCamera = worldCam;
 	}
 	
-	public WorldToScreenConverter(float pipeWidth, float pipeHeight)
+	public Vector2 convertFromScreenToWorld(Vector2 v)
 	{
-		ratio = new Vector2(pipeWidth, pipeHeight);
+		return convertFromScreenToWorld(v.x, v.y);
 	}
 	
-	public void set(WorldToScreenConverter other)
+	public Vector2 convertFromScreenToWorld(float x, float y)
 	{
-		ratio.set(other.ratio);
+		Vector3 v3 = new Vector3(x, y, 0);
+		worldCamera.unproject(v3);
+		return new Vector2(v3.x, v3.y);
 	}
 	
-	public Location convertFromCameraToGrid(Vector2 v)
+	public Location convertFromWorldToGrid(Vector2 v)
 	{
-		return convertFromCameraToGrid(v.x, v.y);
+		return convertFromWorldToGrid(v.x, v.y);
 	}
 	
-	public Location convertFromCameraToGrid(float x, float y)
+	public Location convertFromWorldToGrid(float x, float y)
 	{
-		return new Location((int)(x/ratio.x), (int)(y/ratio.y));
-	}
-	
-	public Vector2 convertFromGridToCamera(Location l)
-	{
-		return convertFromGridToCamera(l.x, l.y);
-	}
-	
-	public Vector2 convertFromGridToCamera(int x, int y)
-	{
-		return new Vector2(x*ratio.x, y*ratio.y);
+		return new Location((int)(x/gridDim.x), (int)(y/gridDim.y));
 	}
 	
 	public Vector2 clampToGrid(Vector2 v)
@@ -48,7 +44,8 @@ public class WorldToScreenConverter {
 	
 	public Vector2 clampToGrid(float x, float y)
 	{
-		return new Vector2(((int)(x/ratio.x))*ratio.x, ((int)(y/ratio.y))*ratio.y);
+		Location l = convertFromWorldToGrid(x, y);
+		return new Vector2(l.x * gridDim.x, l.y * gridDim.y);
 	}
 
 }
