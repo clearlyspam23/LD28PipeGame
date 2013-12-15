@@ -46,7 +46,6 @@ public class Location {
 		return new Location(this).add(d.offset);
 	}
 	
-<<<<<<< HEAD
 	public boolean equals(Object other)
 	{
 		if(!(other instanceof Location))
@@ -54,8 +53,6 @@ public class Location {
 		return equals((Location)other);
 	}
 	
-=======
->>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 	public boolean equals(Location other)
 	{
 		return other.x == x && other.y == y;

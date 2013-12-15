@@ -20,14 +20,11 @@ public class Pipe {
 		
 	}
 	
-<<<<<<< HEAD
 	public Pipe(Pipe other)
 	{
 		set(other);
 	}
 	
-=======
->>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 	public Pipe(PipeDef def)
 	{
 		this.definition = def;
@@ -103,7 +100,6 @@ public class Pipe {
 	{
 		return outputs;
 	}
-<<<<<<< HEAD
 	
 	public void set(Pipe pipe)
 	{
@@ -113,7 +109,5 @@ public class Pipe {
 		inputFrom = pipe.inputFrom;
 		outputs = pipe.outputs;
 	}
-=======
->>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa
 
 }

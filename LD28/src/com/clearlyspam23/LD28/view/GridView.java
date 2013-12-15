@@ -7,7 +7,6 @@ import com.clearlyspam23.LD28.model.GridWorld;
 import com.clearlyspam23.LD28.model.Pipe;
 import com.clearlyspam23.LD28.model.PipeDef;
 
-<<<<<<< HEAD:LD28/src/com/clearlyspam23/LD28/view/GridView.java
 public class GridView {
 	
 	private GridWorld myWorld;
@@ -17,20 +16,6 @@ public class GridView {
 	{
 		myWorld = world;
 		previousWorld = previous;
-=======
-public class PipeView {
-	
-	private GridWorld myWorld;
-	private PipeRenderData[][] renderData;
-	
-	public PipeView(GridWorld world)
-	{
-		myWorld = world;
-		renderData = new PipeRenderData[world.getWidth()][world.getHeight()];
-		for(int i = 0; i < renderData.length; i++)
-			for(int j = 0; j < renderData[i].length; j++)
-				renderData[i][j] = new PipeRenderData();
->>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa:LD28/src/com/clearlyspam23/LD28/view/PipeView.java
 	}
 	
 	private HashMap<PipeDef, PipeRenderer> rendererMap = new HashMap<PipeDef, PipeRenderer>();
@@ -40,24 +25,11 @@ public class PipeView {
 		rendererMap.put(def, renderer);
 	}
 	
-<<<<<<< HEAD:LD28/src/com/clearlyspam23/LD28/view/GridView.java
-=======
-	public void beforeWorldSimulation()
-	{
-		Pipe[][] allPipes = myWorld.getAllPipes();
-		for(int i = 0; i < allPipes.length; i++)
-			for(int j = 0; j < allPipes[i].length; j++)
-				if(allPipes[i][j]!=null)
-					renderData[i][j].lastFill = allPipes[i][j].getFill();
-	}
->>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa:LD28/src/com/clearlyspam23/LD28/view/PipeView.java
-	
 	public void render(SpriteBatch batch, float delta)
 	{
 		if(delta>1)
 			delta = 1;
 		Pipe[][] allPipes = myWorld.getAllPipes();
-<<<<<<< HEAD:LD28/src/com/clearlyspam23/LD28/view/GridView.java
 		Pipe[][] previousPipes = previousWorld.getAllPipes();
 		for(int i = 0; i < allPipes.length; i++)
 			for(int j = 0; j < allPipes[i].length; j++)
@@ -68,12 +40,6 @@ public class PipeView {
 	public GridWorld getWorld()
 	{
 		return myWorld;
-=======
-		for(int i = 0; i < allPipes.length; i++)
-			for(int j = 0; j < allPipes[i].length; j++)
-				if(allPipes[i][j]!=null)
-					rendererMap.get(allPipes[i][j].getDefinition()).render(batch, allPipes[i][j], renderData[i][j], delta);
->>>>>>> 6d137583960acb2c40b57bee8f6ba28261714aaa:LD28/src/com/clearlyspam23/LD28/view/PipeView.java
 	}
 
 }
