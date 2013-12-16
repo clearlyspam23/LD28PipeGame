@@ -5,27 +5,44 @@ import java.util.Map;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.clearlyspam23.LD28.controller.GridEditingController;
+import com.clearlyspam23.LD28.controller.GridRunningController;
+import com.clearlyspam23.LD28.controller.VictoryListener;
 import com.clearlyspam23.LD28.model.Pipe;
 import com.clearlyspam23.LD28.model.PipeDef;
 import com.clearlyspam23.LD28.util.Location;
 import com.clearlyspam23.LD28.util.WorldToScreenConverter;
 
-public class GameView{
+public class GameView implements VictoryListener{
+	
+	private PipeBar sidebar;
+	private TextureRegion startUp;
+	private TextureRegion startDown;
+	private TextureRegion undoUp;
+	private TextureRegion undoDown;
+	private TextureRegion cancelUp;
+	private TextureRegion cancelDown;
+	private TextureRegion fastUp;
+	private TextureRegion fastDown;
+	private TextureRegion uiBackground;
 	
 	private GridView gameView;
-	private PipeBar sidebar;
-	private BasicButton undoButton;
-	private BasicButton startButton;
+	
+	private GameUI ui;
+	
+	private VictoryOverlay overlay;
+	
 	private TextureRegion boundingRegion;
+	private TextureRegion rotateArrow;
 	private TextureRegion background;
-	private TextureRegion UIBackground;
-	private GridEditingController controller;
+	private GridEditingController editingController;
+	private GridRunningController runningController;
 	private OrthographicCamera gridCamera;
 	private OrthographicCamera fullCamera;
 	private WorldToScreenConverter converter;
@@ -37,6 +54,8 @@ public class GameView{
 	private Vector2 upLoc = new Vector2();
 	private Rectangle worldBounds = new Rectangle();
 	private Rectangle mouseBounds = new Rectangle();
+	
+	private BitmapFont font;
 	
 	
 	private Vector2 mouseCoord = new Vector2();
@@ -53,14 +72,8 @@ public class GameView{
 		fullCamera.position.x = fullCamera.viewportWidth/2;
 		fullCamera.position.y = fullCamera.viewportHeight/2;
 		fullCamera.update();
-		sidebar.setLocation(fullCamera.viewportWidth*3/4 - 20, 20);
-		undoButton.setLocation(fullCamera.viewportWidth*3/4 - 20, sidebar.getY()+sidebar.getHeight()+20);
-		startButton.setLocation(fullCamera.viewportWidth*3/4 - 20 + startButton.getBounds().getWidth() + 10, sidebar.getY()+sidebar.getHeight()+20);
-		System.out.println(fullCamera.viewportHeight);
+		setEditingUI();
 		converter = new WorldToScreenConverter(gridCamera, 64, 64);
-		startButton.enable(controller.getNumMoves()<=0);
-		undoButton.enable(controller.canUndo());
-		sidebar.initialize();
 	}
 	
 	public GridView getGameView() {
@@ -68,12 +81,6 @@ public class GameView{
 	}
 	public void setGameView(GridView gameView) {
 		this.gameView = gameView;
-	}
-	public PipeBar getSidebar() {
-		return sidebar;
-	}
-	public void setSidebar(PipeBar sidebar) {
-		this.sidebar = sidebar;
 	}
 
 	public void render(SpriteBatch batch, float delta)
@@ -90,53 +97,57 @@ public class GameView{
 			Vector2 clampedWorldCoord = converter.clampToGrid(worldCoord);
 			if(gameView.getWorld().isValidLocation(l))
 			{
-				if(gameView.getWorld().isLocationEmpty(l)&&controller.getCurrentPipe()!=null&&controller.getNumMoves()>0)
+				if(gameView.getWorld().isLocationEmpty(l)&&editingController.getCurrentPipe()!=null&&editingController.getNumMoves()>0)
 				{
-					Pipe temp = new Pipe(controller.getCurrentPipe());
+					Pipe temp = new Pipe(editingController.getCurrentPipe());
 					temp.setLocation(l.x, l.y);
-					renderMap.get(controller.getCurrentPipe()).render(batch, temp, temp, delta);
+					renderMap.get(editingController.getCurrentPipe()).render(batch, temp, temp, delta);
 					batch.draw(boundingRegion, clampedWorldCoord.x, clampedWorldCoord.y);
 				}
-				else if(!gameView.getWorld().isLocationEmpty(l)&&gameView.getWorld().getPipe(l).hasRotationTable())
+				else if(!gameView.getWorld().isLocationEmpty(l)&&gameView.getWorld().getPipe(l).hasRotationTable()&&editingController.getNumMoves()>0)
 				{
 					batch.draw(boundingRegion, clampedWorldCoord.x, clampedWorldCoord.y);
+					batch.draw(rotateArrow, clampedWorldCoord.x, clampedWorldCoord.y);
 				}
 			}
 		}
 		gameView.render(batch, delta);
 		batch.setProjectionMatrix(fullCamera.combined);
-		batch.draw(UIBackground, sidebar.getX()-25, 0);
-		sidebar.render(batch, delta);
-		startButton.render(batch, delta);
-		undoButton.render(batch, delta);
+		if(!editingController.shouldStart())
+			font.draw(batch, "Moves Left : " + editingController.getNumMoves(), 20, Gdx.graphics.getHeight()-20);
+		ui.render(batch, delta);
+		if(overlay!=null)
+			overlay.render(batch, delta);
 		batch.setProjectionMatrix(m);
 	}
 	
 	private boolean isInBounds(float x, float y)
 	{
-		return mouseBounds.contains(x, y);
+		return x>=0&&x<Gdx.graphics.getWidth()*3/4-20&&y>=0&&y<Gdx.graphics.getHeight();
 	}
 	
 	public void checkInput()
 	{
+		if(overlay!=null)
+		{
+			if(Gdx.input.isKeyPressed(Keys.ANY_KEY))
+			{
+				runningController.setAllFinished(true);
+			}
+			return;
+		}
 		mouseCoord.set(Gdx.input.getX(), Gdx.input.getY());
-		startButton.checkMouseOver(mouseCoord.x, Gdx.graphics.getHeight() - mouseCoord.y);
-		undoButton.checkMouseOver(mouseCoord.x, Gdx.graphics.getHeight() - mouseCoord.y);
-		sidebar.checkMouseOver(mouseCoord.x, Gdx.graphics.getHeight() - mouseCoord.y);
+		ui.checkMouseOver(mouseCoord.x, Gdx.graphics.getHeight() - mouseCoord.y);
 		if(Gdx.input.isTouched()&&!isDown)
 		{
 			downLoc.set(Gdx.input.getX(), Gdx.input.getY());
-			startButton.onDown(downLoc.x, fullCamera.viewportHeight - downLoc.y);
-			undoButton.onDown(downLoc.x, fullCamera.viewportHeight - downLoc.y);
-			sidebar.onMouseDown(downLoc.x, fullCamera.viewportHeight - downLoc.y);
+			ui.checkMouseDown(mouseCoord.x, Gdx.graphics.getHeight() - mouseCoord.y);
 			isDown = true;
 		}
 		else if(!Gdx.input.isTouched()&&isDown)
 		{
 			upLoc.set(Gdx.input.getX(), Gdx.input.getY());
-			startButton.onUp(upLoc.x, fullCamera.viewportHeight - upLoc.y);
-			undoButton.onUp(upLoc.x, fullCamera.viewportHeight - upLoc.y);
-			sidebar.onMouseUp(downLoc.x, fullCamera.viewportHeight - downLoc.y);
+			ui.checkMouseUp(mouseCoord.x, Gdx.graphics.getHeight() - mouseCoord.y);
 			isDown = false;
 			if(isCloseEnough())
 			{
@@ -144,20 +155,13 @@ public class GameView{
 				if(gameView.getWorld().isValidLocation(loc))
 				{
 					if(gameView.getWorld().isLocationEmpty(loc))
-						controller.attemptAddPipe(loc);
+						editingController.attemptAddPipe(loc);
 					else
-						controller.attemptRotatePipe(loc);
+						editingController.attemptRotatePipe(loc);
 				}
 			}
 		}
-		startButton.enable(controller.getNumMoves()<=0);
-		undoButton.enable(controller.canUndo());
-		if(Gdx.input.isKeyPressed(Keys.Q))
-			controller.setCurrentPipe(0);
-		if(Gdx.input.isKeyPressed(Keys.W))
-			controller.setCurrentPipe(1);
-		if(Gdx.input.isKeyPressed(Keys.E))
-			controller.setCurrentPipe(2);
+		ui.checkEnable();
 	}
 	
 	private boolean isCloseEnough()
@@ -165,12 +169,12 @@ public class GameView{
 		return Math.abs(downLoc.x-upLoc.x)<5&&Math.abs(downLoc.y-upLoc.y)<5;
 	}
 
-	public GridEditingController getController() {
-		return controller;
+	public GridEditingController getEditingController() {
+		return editingController;
 	}
 
-	public void setController(GridEditingController controller) {
-		this.controller = controller;
+	public void setEditingController(GridEditingController controller) {
+		this.editingController = controller;
 	}
 
 	public Map<PipeDef, PipeRenderer> getRenderMap() {
@@ -189,45 +193,79 @@ public class GameView{
 		this.boundingRegion = boundingRegion;
 	}
 
-	public void setUndoButton(TextureRegion up, TextureRegion down) {
-		undoButton = new BasicButton(up, down, 128, 128, new UndoButtonEvent(controller));
-	}
-
-	public void setStartButton(TextureRegion up, TextureRegion down) {
-		startButton = new BasicButton(up, down, 128, 128, new StartButtonEvent(controller));
-	}
-
 	public void setBackground(TextureRegion background) {
 		this.background = background;
 	}
-
-	public void setUIBackground(TextureRegion uIBackground) {
-		UIBackground = uIBackground;
+	
+	public void setEditingUI()
+	{
+		ui = new GameUI();
+		ui.setSidebar(sidebar);
+		ui.setUIBackground(uiBackground);
+		UndoButtonHandler undoHandler = new UndoButtonHandler(editingController);
+		ui.setButton1(undoUp, undoDown, undoHandler, undoHandler);
+		StartButtonHandler startHandler = new StartButtonHandler(editingController, this);
+		ui.setButton2(startUp, startDown, startHandler, startHandler);
+		ui.setLocation(fullCamera.viewportWidth*3/4, 0);
+		ui.initialize();
+	}
+	
+	public void setRunningUI()
+	{
+		ui = new GameUI();
+		ui.setSidebar(sidebar);
+		ui.setUIBackground(uiBackground);
+		CancelButtonHandler cancelHandler = new CancelButtonHandler(editingController, this);
+		ui.setButton1(cancelUp, cancelDown, cancelHandler, cancelHandler);
+		FastForwardButtonHandler fastHandler = new FastForwardButtonHandler(runningController);
+		ui.setButton2(fastUp, fastDown, fastHandler, fastHandler);
+		ui.setLocation(fullCamera.viewportWidth*3/4, 0);
+		ui.initialize();
 	}
 
-	private static class StartButtonEvent implements ClickEvent
+	public void setSidebar(PipeBar sidebar) {
+		this.sidebar = sidebar;
+	}
+
+	private static class StartButtonHandler implements ClickEvent, ButtonEnabler
 	{
 		
 		private GridEditingController controller;
+		private GameView gameView;
 		
-		public StartButtonEvent(GridEditingController cont)
+		public StartButtonHandler(GridEditingController cont, GameView view)
 		{
 			controller = cont;
+			gameView = view;
 		}
 
 		@Override
 		public void onClick(float x, float y) {
 			controller.toggleStart(true);
+			gameView.setRunningUI();
+		}
+
+		@Override
+		public void onDown(float x, float y) {
+		}
+
+		@Override
+		public void onUp(float x, float y) {
+		}
+
+		@Override
+		public boolean shouldEnable() {
+			return controller.getNumMoves()<=0;
 		}
 		
 	}
 	
-	private static class UndoButtonEvent implements ClickEvent
+	private static class UndoButtonHandler implements ClickEvent, ButtonEnabler
 	{
 		
 		private GridEditingController controller;
 		
-		public UndoButtonEvent(GridEditingController cont)
+		public UndoButtonHandler(GridEditingController cont)
 		{
 			controller = cont;
 		}
@@ -236,6 +274,139 @@ public class GameView{
 		public void onClick(float x, float y) {
 			controller.undo();
 		}
+
+		@Override
+		public void onDown(float x, float y) {	
+		}
+
+		@Override
+		public void onUp(float x, float y) {
+		}
+
+		@Override
+		public boolean shouldEnable() {
+			return controller.canUndo();
+		}
+		
+	}
+	
+	private static class FastForwardButtonHandler implements ClickEvent, ButtonEnabler
+	{
+		
+		private GridRunningController controller;
+		
+		public FastForwardButtonHandler(GridRunningController cont)
+		{
+			controller = cont;
+		}
+
+		@Override
+		public void onClick(float x, float y) {
+			
+		}
+
+		@Override
+		public void onDown(float x, float y) {	
+			controller.setTimeStep(40);
+		}
+
+		@Override
+		public void onUp(float x, float y) {
+			controller.setTimeStep(10);
+		}
+
+		@Override
+		public boolean shouldEnable() {
+			return true;
+		}
+		
+	}
+	
+	private static class CancelButtonHandler implements ClickEvent, ButtonEnabler
+	{
+		
+		private GridEditingController controller;
+		private GameView gameView;
+		
+		public CancelButtonHandler(GridEditingController cont, GameView view)
+		{
+			controller = cont;
+			gameView = view;
+		}
+
+		@Override
+		public void onClick(float x, float y) {
+			controller.reset();
+			gameView.setEditingUI();
+		}
+
+		@Override
+		public void onDown(float x, float y) {	
+		}
+
+		@Override
+		public void onUp(float x, float y) {
+		}
+
+		@Override
+		public boolean shouldEnable() {
+			return true;
+		}
+		
+	}
+
+	public void setStartButtonTextures(TextureRegion startUp,
+			TextureRegion startDown) {
+		this.startUp = startUp;
+		this.startDown = startDown;
+		
+	}
+
+	public void setUndoButtonTextures(TextureRegion undoUp,
+			TextureRegion undoDown) {
+		this.undoUp = undoUp;
+		this.undoDown = undoDown;
+		
+	}
+
+	public void setCancelButtonTextures(TextureRegion cancelUp,
+			TextureRegion cancelDown) {
+		this.cancelUp = cancelUp;
+		this.cancelDown = cancelDown;
+		
+	}
+
+	public void setFastForwardButtonTextures(TextureRegion fastUp2,
+			TextureRegion fastDown2) {
+		fastUp = fastUp2;
+		fastDown = fastDown2;
+		
+	}
+
+	public void setUIBackground(TextureRegion textureRegion) {
+		uiBackground = textureRegion;
+		
+	}
+
+	public GridRunningController getRunningController() {
+		return runningController;
+	}
+
+	public void setRunningController(GridRunningController runningController) {
+		this.runningController = runningController;
+	}
+
+	public void setFont(BitmapFont font) {
+		this.font = font;
+	}
+
+	public void setRotateArrow(TextureRegion rotateArrow) {
+		this.rotateArrow = rotateArrow;
+	}
+
+	@Override
+	public void onVictory(GridRunningController controller) {
+		overlay = new VictoryOverlay(font);
 		
 	}
 

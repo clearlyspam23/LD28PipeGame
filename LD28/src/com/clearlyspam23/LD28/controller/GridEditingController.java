@@ -15,6 +15,7 @@ public class GridEditingController {
 	private int numMoves = 1;
 	
 	private GridWorld current;
+	private GridWorld copyCurrent;
 	
 	private boolean shouldStart;
 	
@@ -25,6 +26,7 @@ public class GridEditingController {
 	public GridEditingController(GridWorld world)
 	{
 		current = world;
+		copyCurrent = new GridWorld(current);
 	}
 	
 	public boolean shouldStart()
@@ -79,12 +81,14 @@ public class GridEditingController {
 	{
 		undoStack.push(new GridWorld(current));
 		current.addNormalPipe(currentPipe, loc.x, loc.y);
+		copyCurrent.set(current);
 	}
 	
 	public void rotatePipe(Pipe p)
 	{
 		undoStack.push(new GridWorld(current));
 		current.addNormalPipe(p.getRotatedPipe(), p.getLocation().x, p.getLocation().y);
+		copyCurrent.set(current);
 	}
 	
 	public boolean canUndo()
@@ -95,6 +99,13 @@ public class GridEditingController {
 	public void undo()
 	{
 		current.set(undoStack.pop());
+		copyCurrent.set(current);
+	}
+	
+	public void reset()
+	{
+		current.set(copyCurrent);
+		shouldStart = false;
 	}
 	
 	public void setWorldToOriginal()
@@ -103,7 +114,10 @@ public class GridEditingController {
 		while(!undoStack.empty())
 			world = undoStack.pop();
 		if(world!=null)
+		{
 			current.set(world);
+			copyCurrent.set(world);
+		}
 	}
 	
 	public void attemptAddPipe(Location l)

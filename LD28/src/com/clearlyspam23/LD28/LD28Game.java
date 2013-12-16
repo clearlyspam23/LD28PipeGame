@@ -1,51 +1,63 @@
 package com.clearlyspam23.LD28;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.clearlyspam23.LD28.controller.GridEditingController;
-import com.clearlyspam23.LD28.model.GridWorld;
 import com.clearlyspam23.LD28.model.PipeDef;
+import com.clearlyspam23.LD28.screens.TitleScreen;
 import com.clearlyspam23.LD28.util.Direction;
-import com.clearlyspam23.LD28.util.Location;
-import com.clearlyspam23.LD28.view.GameView;
-import com.clearlyspam23.LD28.view.GridView;
-import com.clearlyspam23.LD28.view.PipeBar;
 import com.clearlyspam23.LD28.view.PipeRenderer;
 import com.clearlyspam23.LD28.view.renderers.BasicPipeRenderer;
 
 public class LD28Game implements ApplicationListener {
 	//private OrthographicCamera camera;
-	private SpriteBatch batch;
-	private Texture texture;
-	private Texture UI;
-	private Texture toolBarBackground;
-	private Texture worldBackground;
-	private Texture UIBackground;
+	public SpriteBatch batch;
+	public Texture texture;
+	public Texture UI;
+	public Texture toolBarBackground;
+	public Texture worldBackground;
+	public Texture UIBackground;
+	public Texture gradientBackground;
 	
-	private static final int PIPE_WIDTH = 64;
-	private static final int PIPE_HEIGHT = 64;
-	private static final float WORLD_STEP_DELAY = 0.25f;
+	public BitmapFont font;
 	
-	private float worldDelay;
-	private GridWorld currentWorld;
-	private GridWorld previousWorld;
-	private GameView view;
-	private GridEditingController controller;
+	public static final int PIPE_WIDTH = 64;
+	public static final int PIPE_HEIGHT = 64;
+	public static final float WORLD_STEP_DELAY = 0.125f;
+	
+	public HashMap<PipeDef, PipeRenderer> renderMap = new HashMap<PipeDef, PipeRenderer>();
+	public ArrayList<PipeDef> definitions = new ArrayList<PipeDef>();
+	
+	public LevelsHardCode levels;
+	
+	private Screen currentScreen;
+	
+	public void changeScreen(Screen screen)
+	{
+		currentScreen.hide();
+		currentScreen = screen;
+		currentScreen.show();
+	}
+	
+//	private float worldDelay;
+//	private GridWorld currentWorld;
+//	private GridWorld previousWorld;
+//	private GameView view;
+//	private GridEditingController editingController;
+//	private GridRunningController runningController;
 	
 	@Override
 	public void create() {		
 		
 		Texture.setEnforcePotImages(false);
-		//Model code
-		
-		currentWorld = new GridWorld(10, 10);
 		
 		PipeDef horizontalPipe = createBidirectional(new Direction[] { Direction.LEFT, Direction.RIGHT } );
 		PipeDef verticalPipe = createBidirectional(new Direction[] { Direction.UP, Direction.DOWN } );
@@ -55,63 +67,57 @@ public class LD28Game implements ApplicationListener {
 		PipeDef downLeftLPipe = createBidirectional( new Direction[] { Direction.DOWN, Direction.LEFT } );
 		PipeDef upRightLPipe = createBidirectional( new Direction[] { Direction.UP, Direction.RIGHT } );
 		PipeDef upLeftLPipe = createBidirectional(new Direction[] { Direction.UP, Direction.LEFT } );
+		PipeDef downRightLeftTPipe = createBidirectional( new Direction[] { Direction.DOWN, Direction.RIGHT, Direction.LEFT } );
+		PipeDef upDownLeftTPipe = createBidirectional( new Direction[] { Direction.DOWN, Direction.LEFT, Direction.UP } );
+		PipeDef upDownRightTPipe = createBidirectional( new Direction[] { Direction.UP, Direction.RIGHT, Direction.DOWN } );
+		PipeDef upLeftRightTPipe = createBidirectional(new Direction[] { Direction.UP, Direction.LEFT, Direction.RIGHT } );
 		
 		PipeDef[] flatRotationTable = new PipeDef[]{ horizontalPipe, verticalPipe };
 		PipeDef[] lRotationTable = new PipeDef[]{ downRightLPipe, downLeftLPipe, upLeftLPipe, upRightLPipe };
+		PipeDef[] tRotationTable = new PipeDef[]{ downRightLeftTPipe, upDownLeftTPipe, upLeftRightTPipe, upDownRightTPipe };
 		
 		horizontalPipe.rotationTable = verticalPipe.rotationTable = flatRotationTable;
 		horizontalPipe.placeInTable = 0;
 		verticalPipe.placeInTable = 1;
+		
 		downRightLPipe.rotationTable = downLeftLPipe.rotationTable = upRightLPipe.rotationTable = upLeftLPipe.rotationTable = lRotationTable;
 		downRightLPipe.placeInTable = 0;
 		downLeftLPipe.placeInTable = 1;
 		upLeftLPipe.placeInTable = 2;
 		upRightLPipe.placeInTable = 3;
 		
-		currentWorld.addNormalPipe(finishHorizontalPipe, 9, 9);
-		currentWorld.addNormalPipe(downRightLPipe, 8, 9);
-		currentWorld.addNormalPipe(verticalPipe, 8, 8);
-		currentWorld.addNormalPipe(verticalPipe, 8, 7);
-		currentWorld.addNormalPipe(verticalPipe, 8, 6);
-		//currentWorld.addNormalPipe(verticalPipe, 8, 5);
-		currentWorld.addNormalPipe(verticalPipe, 8, 4);
-		currentWorld.addNormalPipe(verticalPipe, 8, 3);
-		currentWorld.addNormalPipe(verticalPipe, 8, 2);
-		currentWorld.addNormalPipe(upLeftLPipe, 8, 1);
-		currentWorld.addNormalPipe(horizontalPipe, 7, 1);
-		currentWorld.addNormalPipe(horizontalPipe, 6, 1);
-		currentWorld.addNormalPipe(horizontalPipe, 5, 1);
-		currentWorld.addNormalPipe(horizontalPipe, 4, 1);
-		currentWorld.addNormalPipe(horizontalPipe, 3, 1);
-		currentWorld.addNormalPipe(horizontalPipe, 2, 1);
-		currentWorld.addNormalPipe(horizontalPipe, 1, 1);
-		currentWorld.addNormalPipe(downRightLPipe, 0, 1);
-		currentWorld.addNormalPipe(finishVerticalPipe, 0, 0);
-		currentWorld.addStart(new Location(9, 9), Direction.RIGHT);
-		currentWorld.addFinish(new Location(0, 0));
-		previousWorld = new GridWorld(currentWorld);
+		downRightLeftTPipe.rotationTable = upDownLeftTPipe.rotationTable = upLeftRightTPipe.rotationTable = upDownRightTPipe.rotationTable = tRotationTable;
+		downRightLeftTPipe.placeInTable = 0;
+		upDownLeftTPipe.placeInTable = 1;
+		upLeftRightTPipe.placeInTable = 2;
+		upDownRightTPipe.placeInTable = 3;
 		
-		//Controller code
-		
-		controller = new GridEditingController(currentWorld);
-		controller.addPipeDef(verticalPipe);
-		controller.addPipeDef(horizontalPipe);
-		controller.addPipeDef(upLeftLPipe);
-		
-		//View code
+		definitions.add(finishHorizontalPipe);
+		definitions.add(finishVerticalPipe);
+		definitions.add(horizontalPipe);
+		definitions.add(verticalPipe);
+		definitions.add(downRightLPipe);
+		definitions.add(downLeftLPipe);
+		definitions.add(upRightLPipe);
+		definitions.add(upLeftLPipe);
+		definitions.add(downRightLeftTPipe);
+		definitions.add(upDownLeftTPipe);
+		definitions.add(upLeftRightTPipe);
+		definitions.add(upDownRightTPipe);
 		
 		texture = new Texture(Gdx.files.internal("data/Pipes.png"));
 		UI = new Texture(Gdx.files.internal("data/UI.png"));
 		toolBarBackground = new Texture(Gdx.files.internal("data/ToolBarBackground.png"));
 		worldBackground = new Texture(Gdx.files.internal("data/GrassBackground1.png"));
 		UIBackground = new Texture(Gdx.files.internal("data/UIBackground.png"));
+		gradientBackground = new Texture(Gdx.files.internal("data/BlueGradientBackground.png"));
+		font = new BitmapFont(Gdx.files.internal("data/GadugiBlack.fnt"));
 		TextureRegion[][] regions = TextureRegion.split(texture, PIPE_WIDTH, PIPE_HEIGHT);
 //		for(TextureRegion[] trs : regions)
 //			for(TextureRegion r : trs)
 //				r.flip(false, true);
-		view = new GameView();
+		
 		//WorldToScreenConverter converter = new WorldToScreenConverter(PIPE_WIDTH, PIPE_HEIGHT);
-		HashMap<PipeDef, PipeRenderer> renderMap = new HashMap<PipeDef, PipeRenderer>();
 		renderMap.put(horizontalPipe, new BasicPipeRenderer(regions[0][0], regions[2][0]));
 		renderMap.put(verticalPipe, new BasicPipeRenderer(regions[0][1], regions[2][1]));
 		renderMap.put(finishHorizontalPipe, new BasicPipeRenderer(regions[1][0], regions[3][0]));
@@ -120,30 +126,10 @@ public class LD28Game implements ApplicationListener {
 		renderMap.put(downLeftLPipe, new BasicPipeRenderer(regions[0][3], regions[2][3]));
 		renderMap.put(upRightLPipe, new BasicPipeRenderer(regions[1][2], regions[3][2]));
 		renderMap.put(upLeftLPipe, new BasicPipeRenderer(regions[1][3], regions[3][3]));
-		GridView gridView = new GridView(currentWorld, previousWorld, renderMap);
-		view.setRenderMap(renderMap);
-		view.setGameView(gridView);
-		TextureRegion background = new TextureRegion(toolBarBackground);
-		TextureRegion pipeActive = new TextureRegion(UI, 320, 0, 70, 70);
-		TextureRegion pipeInactive = new TextureRegion(UI, 64, 0, 70, 70);
-		TextureRegion pipeOver = new TextureRegion(UI, 192, 0, 70, 70);
-		TextureRegion startUp = new TextureRegion(UI, 0, 128, 128, 128);
-		TextureRegion startDown = new TextureRegion(UI, 128, 128, 128, 128);
-		TextureRegion undoUp = new TextureRegion(UI, 0, 256, 128, 128);
-		TextureRegion undoDown = new TextureRegion(UI, 128, 256, 128, 128);
-		BitmapFont font = new BitmapFont(Gdx.files.internal("data/GadugiBlack.fnt"));
-		PipeBar sidebar = new PipeBar(background, pipeActive, pipeInactive, pipeOver);
-		sidebar.setController(controller);
-		sidebar.setMap(renderMap);
-		view.setSidebar(sidebar);
-		view.setController(controller);
-		view.setBoundingRegion(new TextureRegion(UI, 0, 0, 64, 64));
-		view.setStartButton(startUp, startDown);
-		view.setUndoButton(undoUp, undoDown);
-		view.setBackground(new TextureRegion(worldBackground));
-		view.setUIBackground(new TextureRegion(UIBackground));
-		
-		view.initialize();
+		renderMap.put(downRightLeftTPipe, new BasicPipeRenderer(regions[0][4], regions[2][4]));
+		renderMap.put(upDownLeftTPipe, new BasicPipeRenderer(regions[0][5], regions[2][5]));
+		renderMap.put(upDownRightTPipe, new BasicPipeRenderer(regions[1][4], regions[3][4]));
+		renderMap.put(upLeftRightTPipe, new BasicPipeRenderer(regions[1][5], regions[3][5]));
 		
 		
 //		camera = new OrthographicCamera(currentWorld.getWidth()*PIPE_WIDTH, currentWorld.getHeight()*PIPE_HEIGHT);
@@ -152,6 +138,11 @@ public class LD28Game implements ApplicationListener {
 //		camera.position.y = camera.viewportHeight/2;
 //		camera.update();
 		batch = new SpriteBatch();
+		
+		levels = new LevelsHardCode();
+		
+		currentScreen = new TitleScreen(this, batch, new TextureRegion(gradientBackground), font);
+		currentScreen.show();
 		
 		//texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 	}
@@ -164,34 +155,15 @@ public class LD28Game implements ApplicationListener {
 		toolBarBackground.dispose();
 		worldBackground.dispose();
 		UIBackground.dispose();
+		gradientBackground.dispose();
+		levels.dispose();
 	}
 
 	@Override
 	public void render() {		
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		if(!controller.shouldStart())
-		{
-			
-		}
-		else
-		{
-			worldDelay+=Gdx.graphics.getDeltaTime();
-			if(worldDelay>=WORLD_STEP_DELAY)
-			{
-				previousWorld.shallowSet(currentWorld);
-				currentWorld.simulate(20);
-				worldDelay-=WORLD_STEP_DELAY;
-			}
-		}
-		
-		view.checkInput();
-		//view.render(worldDelay/WORLD_STEP_DELAY);
-		
-//		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
-		view.render(batch, worldDelay/WORLD_STEP_DELAY);
-		batch.end();
+		currentScreen.render(Gdx.graphics.getDeltaTime());
 	}
 
 	@Override

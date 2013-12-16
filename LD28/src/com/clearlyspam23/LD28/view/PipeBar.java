@@ -142,6 +142,18 @@ public class PipeBar{
 			myButton.activate(true);
 			controller.setCurrentPipe(index);
 		}
+
+		@Override
+		public void onDown(float x, float y) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onUp(float x, float y) {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 

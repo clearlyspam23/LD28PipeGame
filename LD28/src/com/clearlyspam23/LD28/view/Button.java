@@ -41,6 +41,8 @@ public abstract class Button {
 		{
 			pressed = true;
 			downLoc.set(x, y);
+			if(event!=null)
+				event.onDown(x, y);
 		}
 	}
 	
@@ -49,8 +51,11 @@ public abstract class Button {
 		if(pressed)
 		{
 			pressed = false;
-			if(closeEnough(x, y)&&event!=null)
-				event.onClick(downLoc.x, downLoc.y);
+			if(event!=null) {
+				if(closeEnough(x, y))
+					event.onClick(downLoc.x, downLoc.y);
+				event.onUp(x, y);
+			}
 		}
 	}
 	
