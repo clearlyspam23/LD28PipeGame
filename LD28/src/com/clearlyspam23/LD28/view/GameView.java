@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.clearlyspam23.LD28.LD28Game;
 import com.clearlyspam23.LD28.controller.GridEditingController;
 import com.clearlyspam23.LD28.controller.GridRunningController;
 import com.clearlyspam23.LD28.controller.VictoryListener;
@@ -32,7 +33,7 @@ public class GameView implements VictoryListener{
 	private TextureRegion fastDown;
 	private TextureRegion uiBackground;
 	
-	private GridView gameView;
+	private GridView gridView;
 	
 	private GameUI ui;
 	
@@ -62,59 +63,61 @@ public class GameView implements VictoryListener{
 	
 	public void initialize()
 	{
-		worldBounds.set(0, 0, (gameView.getWorld().getWidth())*64, (gameView.getWorld().getHeight())*64);
+		worldBounds.set(0, 0, (gridView.getWorld().getWidth())*64, (gridView.getWorld().getHeight())*64);
 		mouseBounds.set(worldBounds.x, worldBounds.y, worldBounds.width+64, worldBounds.height+64+32);
 		gridCamera = new OrthographicCamera(worldBounds.width*17/12, worldBounds.height);
 		gridCamera.position.x = gridCamera.viewportWidth/2;
 		gridCamera.position.y = gridCamera.viewportHeight/2;
 		gridCamera.update();
-		fullCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		fullCamera = new OrthographicCamera(LD28Game.OPTIMAL_RENDER_WIDTH, LD28Game.OPTIMAL_RENDER_HEIGHT);
 		fullCamera.position.x = fullCamera.viewportWidth/2;
 		fullCamera.position.y = fullCamera.viewportHeight/2;
 		fullCamera.update();
 		setEditingUI();
-		converter = new WorldToScreenConverter(gridCamera, 64, 64);
+		converter = new WorldToScreenConverter(gridCamera, fullCamera, 64, 64);
 	}
 	
 	public GridView getGameView() {
-		return gameView;
+		return gridView;
 	}
 	public void setGameView(GridView gameView) {
-		this.gameView = gameView;
+		this.gridView = gameView;
 	}
 
 	public void render(SpriteBatch batch, float delta)
 	{
 		Matrix4 m = batch.getProjectionMatrix();
+		Vector2 mouseLoc = new Vector2(mouseCoord.x, mouseCoord.y);
+		mouseLoc = converter.convertFromMouseToWorld(mouseLoc);
 		batch.setProjectionMatrix(fullCamera.combined);
 		if(background!=null)
 			batch.draw(background, worldBounds.x, worldBounds.y);
 		batch.setProjectionMatrix(gridCamera.combined);
 		if(isInBounds(mouseCoord.x, Gdx.graphics.getHeight() - mouseCoord.y))
 		{
-			Vector2 worldCoord = converter.convertFromScreenToWorld(mouseCoord);
+			Vector2 worldCoord = converter.convertFromMouseToWorld(mouseCoord);
 			Location l = converter.convertFromWorldToGrid(worldCoord);
-			Vector2 clampedWorldCoord = converter.clampToGrid(worldCoord);
-			if(gameView.getWorld().isValidLocation(l))
+			if(gridView.getWorld().isValidLocation(l))
 			{
-				if(gameView.getWorld().isLocationEmpty(l)&&editingController.getCurrentPipe()!=null&&editingController.getNumMoves()>0)
+				Vector2 clampedWorldCoord = converter.clampToGrid(worldCoord);
+				if(gridView.getWorld().isLocationEmpty(l)&&editingController.getCurrentPipe()!=null&&editingController.getNumMoves()>0)
 				{
 					Pipe temp = new Pipe(editingController.getCurrentPipe());
 					temp.setLocation(l.x, l.y);
 					renderMap.get(editingController.getCurrentPipe()).render(batch, temp, temp, delta);
 					batch.draw(boundingRegion, clampedWorldCoord.x, clampedWorldCoord.y);
 				}
-				else if(!gameView.getWorld().isLocationEmpty(l)&&gameView.getWorld().getPipe(l).hasRotationTable()&&editingController.getNumMoves()>0)
+				else if(!gridView.getWorld().isLocationEmpty(l)&&gridView.getWorld().getPipe(l).hasRotationTable()&&editingController.getNumMoves()>0)
 				{
 					batch.draw(boundingRegion, clampedWorldCoord.x, clampedWorldCoord.y);
 					batch.draw(rotateArrow, clampedWorldCoord.x, clampedWorldCoord.y);
 				}
 			}
 		}
-		gameView.render(batch, delta);
+		gridView.render(batch, delta);
 		batch.setProjectionMatrix(fullCamera.combined);
 		if(!editingController.shouldStart())
-			font.draw(batch, "Moves Left : " + editingController.getNumMoves(), 20, Gdx.graphics.getHeight()-20);
+			font.draw(batch, "Moves Left : " + editingController.getNumMoves(), 20, fullCamera.viewportHeight-20);
 		ui.render(batch, delta);
 		if(overlay!=null)
 			overlay.render(batch, delta);
@@ -131,9 +134,11 @@ public class GameView implements VictoryListener{
 		if(overlay!=null)
 		{
 			if(Gdx.input.isKeyPressed(Keys.ANY_KEY))
-			{
 				runningController.setAllFinished(true);
-			}
+			if(Gdx.input.isTouched()&&!isDown)
+				runningController.setAllFinished(true);
+			else if(!Gdx.input.isTouched()&&isDown)
+				isDown = false;
 			return;
 		}
 		mouseCoord.set(Gdx.input.getX(), Gdx.input.getY());
@@ -151,10 +156,10 @@ public class GameView implements VictoryListener{
 			isDown = false;
 			if(isCloseEnough())
 			{
-				Location loc = converter.convertFromWorldToGrid(converter.convertFromScreenToWorld(downLoc));
-				if(gameView.getWorld().isValidLocation(loc))
+				Location loc = converter.convertFromWorldToGrid(converter.convertFromMouseToWorld(downLoc));
+				if(gridView.getWorld().isValidLocation(loc))
 				{
-					if(gameView.getWorld().isLocationEmpty(loc))
+					if(gridView.getWorld().isLocationEmpty(loc))
 						editingController.attemptAddPipe(loc);
 					else
 						editingController.attemptRotatePipe(loc);

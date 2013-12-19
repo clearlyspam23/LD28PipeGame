@@ -31,7 +31,9 @@ public class LD28Game implements ApplicationListener {
 	
 	public static final int PIPE_WIDTH = 64;
 	public static final int PIPE_HEIGHT = 64;
-	public static final float WORLD_STEP_DELAY = 0.125f;
+	public static final float WORLD_STEP_DELAY = 0.0625f;
+	public static final int OPTIMAL_RENDER_WIDTH = 1024;
+	public static final int OPTIMAL_RENDER_HEIGHT = 768;
 	
 	public HashMap<PipeDef, PipeRenderer> renderMap = new HashMap<PipeDef, PipeRenderer>();
 	public ArrayList<PipeDef> definitions = new ArrayList<PipeDef>();

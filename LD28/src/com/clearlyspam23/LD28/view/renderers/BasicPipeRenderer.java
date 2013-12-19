@@ -43,7 +43,7 @@ public class BasicPipeRenderer extends PipeRenderer {
 		switch(start)
 		{
 		case DOWN:
-			dif = full.getV2() - full.getV();
+			dif = full.getV() - full.getV2();
 			dimensions.x = full.getRegionWidth();
 			dimensions.y = full.getRegionHeight()*percentage;
 			uv.x = full.getU();
